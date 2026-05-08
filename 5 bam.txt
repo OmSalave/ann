@@ -1,0 +1,40 @@
+import numpy as np
+
+# 1. Define Orthogonal Pattern Pairs
+# We change the last bit of x2 to -1 so x1 and x2 are complete opposites
+x1 = np.array([1, 1, 1])
+y1 = np.array([1, 1, -1, -1])
+
+x2 = np.array([-1, -1, -1]) # Changed from 1 to -1
+y2 = np.array([-1, -1, 1, 1])
+
+# 2. Calculate Weight Matrix
+W = np.outer(x1, y1) + np.outer(x2, y2)
+
+print("Weight Matrix (W):\n", W)
+
+# 3. Recall Functions
+def recall_forward(x, weight_matrix):
+    # np.sign(0) is 0, but in BAM we usually want to maintain 
+    # the previous state or push it to 1/-1. 
+    # Here we'll just use sign and see the result.
+    return np.sign(np.dot(x, weight_matrix))
+
+def recall_backward(y, weight_matrix):
+    return np.sign(np.dot(y, weight_matrix.T))
+
+# 4. Execute Recall
+y1_res = recall_forward(x1, W)
+y2_res = recall_forward(x2, W)
+x1_res = recall_backward(y1, W)
+x2_res = recall_backward(y2, W)
+
+# 5. Neat Output
+print("\n--- RESULTS ---")
+print(f"Forward x1 -> y1: {np.array_equal(y1_res, y1)} ({y1_res})")
+print(f"Forward x2 -> y2: {np.array_equal(y2_res, y2)} ({y2_res})")
+print(f"Backward y1 -> x1: {np.array_equal(x1_res, x1)} ({x1_res})")
+print(f"Backward y2 -> x2: {np.array_equal(x2_res, x2)} ({x2_res})")
+
+if all([np.array_equal(y1_res, y1), np.array_equal(x1_res, x1)]):
+    print("\nStatus: Success! Perfect bidirectional recall.")

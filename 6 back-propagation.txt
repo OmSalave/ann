@@ -1,0 +1,57 @@
+# 6,7,9
+
+import numpy as np 
+import numpy.random as ar 
+
+# XOR Data
+X = np.array([[0,0],[0,1],[1,0],[1,1]]) 
+Y = np.array([[0],[1],[1],[0]]) 
+lr = 0.5 
+#np.random.seed(0) 
+
+# Initialize Weights
+W1 = ar.rand(2,2) # Weights from Input to Hidden
+W2 = ar.rand(2,1) # Weights from Hidden to Output
+
+def sigmoid(x): 
+    return 1 / (1 + np.exp(-x)) 
+
+def sigmoid_d(x): 
+    return x * (1 - x) 
+
+print("Training started...")
+
+for i in range(3001): 
+    # --- FORWARD PASS ---
+    hidden_input = np.dot(X, W1) 
+    hidden_output = sigmoid(hidden_input) 
+    
+    final_input = np.dot(hidden_output, W2) 
+    final_output = sigmoid(final_input) 
+
+    # --- BACKPROPAGATION ---
+    # 1. Calculate error at Output
+    error = Y - final_output 
+    d_output = error * sigmoid_d(final_output) 
+    
+    # 2. Calculate error at Hidden Layer
+    error_hidden = np.dot(d_output, W2.T)
+    d_hidden = error_hidden * sigmoid_d(hidden_output) 
+
+    # --- WEIGHT UPDATE (This MUST be inside the loop) ---
+    W2 += np.dot(hidden_output.T, d_output) * lr 
+    W1 += np.dot(X.T, d_hidden) * lr 
+
+    # Print progress
+    if i % 500 == 0: 
+        mse = np.mean(np.square(error))
+        print(f"Epoch: {i} | MSE: {mse:.4f}")
+
+print("\n***************** FINAL OUTPUT *******************")
+# Threshold the final results to 0 or 1
+final_results = np.array([[1 if val > 0.5 else 0] for val in final_output])
+print("Predicted XOR Output:\n", final_results)
+
+print("\n***************** FINAL WEIGHTS *******************")
+print("W1 (Input-Hidden):\n", W1)
+print("W2 (Hidden-Output):\n", W2)

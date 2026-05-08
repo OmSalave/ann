@@ -1,0 +1,37 @@
+import numpy as np
+
+# 1. Inputs (4-bit binary patterns)
+patterns = [
+    np.array([1, 1, 0, 0]),
+    np.array([1, 1, 0, 1]),
+    np.array([0, 0, 1, 1]),
+    np.array([0, 0, 1, 0])
+]
+
+vigilance = 0.6
+weights = []   # Cluster templates
+clusters = []  # Grouped patterns
+
+# 2. Clustering Loop
+for p in patterns:
+    found = False  #flag
+    
+    for i in range(len(weights)):
+        # Calculate Match: (Intersection / Total bits in input)
+        match = np.sum(np.minimum(p, weights[i])) / np.sum(p)
+        
+        if match >= vigilance:
+            # RESONANCE: Join existing cluster and update template
+            weights[i] = np.minimum(weights[i], p)
+            clusters[i].append(p.tolist())
+            found = True
+            break
+            
+    if not found:
+        # RESET: Create a new cluster
+        weights.append(p)
+        clusters.append([p.tolist()])
+
+# 3. Output
+for i in range(len(clusters)):
+    print(f"Cluster {i}: {clusters[i]}")

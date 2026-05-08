@@ -1,0 +1,24 @@
+# M-P Neuron Implementation
+def mp_neuron(x1, x2):
+    # Weights: w1 is excitatory (1), w2 is inhibitory (-1)
+    w1 = 1
+    w2 = -1
+    threshold = 1
+    
+    # Calculate the weighted sum: (x1 * w1) + (x2 * w2)
+    net_input = (x1 * w1) + (x2 * w2)
+    
+    # Threshold Logic
+    if net_input >= threshold:
+        return 1
+    else:
+        return 0
+
+# Define the inputs for the ANDNOT truth table
+inputs = [(0, 0), (0, 1), (1, 0), (1, 1)]
+
+print("x1 | x2 | Output")
+print("---------------")
+for x1, x2 in inputs:
+    result = mp_neuron(x1, x2)
+    print(f"{x1}  | {x2}  | {result}")

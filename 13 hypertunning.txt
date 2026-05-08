@@ -1,0 +1,100 @@
+import tensorflow as tf
+from tensorflow.keras import layers, models
+import matplotlib.pyplot as plt
+
+# 1. DATA PREPARATION
+print("Loading and preprocessing data...")
+(train_images, train_labels), (test_images, test_labels) = tf.keras.datasets.cifar10.load_data()
+
+# Normalize pixel values to be between 0 and 1
+train_images, test_images = train_images / 255.0, test_images / 255.0
+
+# 2. BASELINE MODEL (Prone to overfitting)
+def build_baseline():
+    model = models.Sequential([
+        layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)),
+        layers.MaxPooling2D((2, 2)),
+        layers.Conv2D(64, (3, 3), activation='relu'),
+        layers.MaxPooling2D((2, 2)),
+        layers.Flatten(),
+        layers.Dense(64, activation='relu'),
+        layers.Dense(10)
+    ])
+    model.compile(optimizer='adam',
+                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  metrics=['accuracy'])
+    return model
+
+# 3. OPTIMIZED MODEL (Hyperparameter Tuning: Augmentation, Dropout, Batch Normalization)
+def build_optimized():
+    model = models.Sequential([
+        # Data Augmentation to prevent overfitting
+        layers.RandomFlip("horizontal"),
+        layers.RandomRotation(0.1),
+        layers.RandomZoom(0.1),
+        
+        layers.Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=(32, 32, 3)),
+        layers.BatchNormalization(), # Stabilizes learning
+        layers.MaxPooling2D((2, 2)),
+        
+        layers.Conv2D(64, (3, 3), padding='same', activation='relu'),
+        layers.BatchNormalization(),
+        layers.MaxPooling2D((2, 2)),
+        layers.Dropout(0.3), # Reduces co-dependency of neurons
+        
+        layers.Flatten(),
+        layers.Dense(128, activation='relu'),
+        layers.Dropout(0.5), # Regularization for the dense layer
+        layers.Dense(10)
+    ])
+    
+    # Using a specific learning rate for better convergence
+    opt = tf.keras.optimizers.Adam(learning_rate=0.001)
+    model.compile(optimizer=opt,
+                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  metrics=['accuracy'])
+    return model
+
+# 4. TRAINING
+EPOCHS = 15
+
+print("\n--- Training Baseline Model ---")
+baseline_model = build_baseline()
+history_base = baseline_model.fit(train_images, train_labels, epochs=EPOCHS, 
+                                  validation_data=(test_images, test_labels), verbose=1)
+
+print("\n--- Training Optimized Model ---")
+optimized_model = build_optimized()
+history_opt = optimized_model.fit(train_images, train_labels, epochs=EPOCHS, 
+                                  validation_data=(test_images, test_labels), verbose=1)
+
+# 5. VISUALIZATION OF COMPARISONS
+def plot_results(h_base, h_opt):
+    epochs_range = range(EPOCHS)
+
+    plt.figure(figsize=(14, 6))
+
+    # Accuracy Comparison
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs_range, h_base.history['val_accuracy'], label='Baseline Val Acc', color='red', linestyle='--')
+    plt.plot(epochs_range, h_opt.history['val_accuracy'], label='Optimized Val Acc', color='blue')
+    plt.title('Validation Accuracy Comparison')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend(loc='lower right')
+    plt.grid(True)
+
+    # Loss Comparison
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs_range, h_base.history['val_loss'], label='Baseline Val Loss', color='red', linestyle='--')
+    plt.plot(epochs_range, h_opt.history['val_loss'], label='Optimized Val Loss', color='blue')
+    plt.title('Validation Loss Comparison')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend(loc='upper right')
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
+plot_results(history_base, history_opt)

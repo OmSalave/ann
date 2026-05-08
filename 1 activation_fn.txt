@@ -1,0 +1,39 @@
+import numpy as np 
+import matplotlib.pyplot as mp 
+
+def sigmoid(x): 
+    a=1/(1+np.exp(-x)) 
+    return a 
+def tanhh(x): 
+    return np.tanh(x) 
+def relu(x): 
+    return np.maximum(0,x) 
+    
+x=np.linspace(-10,10,20)
+
+y=sigmoid(x) 
+y1=tanhh(x) 
+y2=relu(x) 
+
+mp.figure(figsize=(15,10)) 
+mp.title("Activation Function",color="red",fontsize=20) 
+
+mp.subplot(221)
+
+mp.plot(x,y,color="blue",marker="o",linestyle="--",label="Sigmoid") 
+mp.xlabel("Input") 
+mp.ylabel("Output") 
+mp.legend() 
+
+mp.subplot(222) 
+mp.plot(x,y1,color="red",marker="o",linestyle="--",label="Hyperbolic Tangent") 
+mp.xlabel("Input") 
+mp.ylabel("Output") 
+mp.legend() 
+
+mp.subplot(223) 
+mp.plot(x,y2,color="orange",marker="o",linestyle="--",label="ReLU") 
+mp.xlabel("Input") 
+mp.ylabel("Output") 
+mp.legend() 
+

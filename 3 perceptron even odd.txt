@@ -1,0 +1,54 @@
+import numpy as np 
+import numpy.random as ar 
+
+def inpt(): 
+    b = [] 
+    for i in range(10): 
+        asc = ord(str(i)) 
+        # 'bin' is a built-in function, renamed to 'b_str'
+        b_str = format(asc, '07b') 
+        print(f"{i} -> {asc} -> {b_str}") 
+        d = [int(bit) for bit in b_str] 
+        b.append(d) 
+    return b 
+
+x = inpt() 
+w = ar.rand(7) 
+t = [1,0,1,0,1,0,1,0,1,0] # 1 for Even, 0 for Odd
+b = 0 
+alpha = 0.1 
+
+# Training Phase
+for epoch in range(50): 
+    e = 0 
+    for i in range(len(x)): 
+        netw = np.dot(w, x[i]) + b 
+        yin = 1 if netw >= 0 else 0 
+        error = t[i] - yin 
+        if error != 0: 
+            e += 1 
+            w = w + (alpha * error * np.array(x[i])) 
+            b = b + (alpha * error) 
+    if e == 0: 
+        print(f"Converged at epoch {epoch}")
+        break 
+
+print("\nFinal Weights:", w) 
+print("Final Bias:", b) 
+
+# Testing Phase
+while True: 
+    try:
+        val = input("\nEnter a single digit (0-9): ")
+        asc = ord(val) 
+        bin_str = format(asc, '07b') 
+        d = [int(bit) for bit in bin_str] 
+        netw = np.dot(w, d) + b 
+        yin = 1 if netw >= 0 else 0 
+        print("Result:", "Even" if yin == 1 else "Odd") 
+    except TypeError:
+        print("Please enter a valid digit.")
+        
+    choice = input("Continue? (y/n): ") 
+    if choice.lower() != 'y': 
+        break

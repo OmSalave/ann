@@ -1,0 +1,34 @@
+import numpy as np
+
+# 1. Stored Patterns (Orthogonal / Highly Distinct)
+# To work well, patterns should have a dot product of 0 or close to it.
+P = np.array([
+    [1, 1, -1, -1],  # Pattern A
+    [1, -1, 1, -1]   # Pattern B
+])
+
+# 2. Training: Create Weight Matrix
+W = np.dot(P.T, P)
+np.fill_diagonal(W, 0)
+
+print("New Weight Matrix:\n", W)
+
+# 3. Testing: Noisy Inputs
+# N1 is a corrupted version of Pattern A
+# N2 is a corrupted version of Pattern B
+N = np.array([
+    [1, 1, 1, -1],   # Only one bit off from Pattern A
+    [1, -1, -1, -1]  # Only one bit off from Pattern B
+])
+
+def recall(noisy_pattern, weights, steps=2):
+    state = noisy_pattern
+    for _ in range(steps): # Iterative recall is more stable
+        raw_output = np.dot(weights, state)
+        state = np.where(raw_output >= 0, 1, -1)
+    return state
+
+print("\n--- FIXED RECALL RESULTS ---")
+for i in range(len(N)):
+    recalled = recall(N[i], W)
+    print(f"Noisy Input: {N[i]} -> Recalled: {recalled}")

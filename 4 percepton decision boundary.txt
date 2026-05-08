@@ -1,0 +1,67 @@
+import numpy as np 
+import numpy.random as ar 
+import matplotlib.pyplot as plt 
+ 
+# Input: [x1, x2] combinations for AND gate
+X = np.array([[0,0],[0,1],[1,0],[1,1]]) 
+# Target: Only [1,1] results in 1
+t = np.array([0,0,0,1]) 
+
+w = ar.rand(2)  
+b = ar.rand(1) 
+lr = ar.rand(1) 
+
+print(f"Initial w={w}, b={b}, lr={lr}")
+ 
+for epoch in range(50): 
+    e = 0 
+    for i in range(len(X)): 
+        z = np.dot(X[i], w) + b 
+        yin_val = 1 if z >= 0 else 0 
+        error = t[i] - yin_val 
+        if error != 0: 
+            e += 1 
+            w += lr * error * X[i] 
+            b += lr * error 
+    if e == 0: 
+        print(f"Converged at epoch: {epoch}")
+        break
+
+print("Final weights:", w) 
+print("Final bias:", b) 
+  
+# Validation
+predictions = [] 
+for i in range(len(X)): 
+    z = np.dot(X[i], w) + b 
+    predictions.append(1 if z >= 0 else 0) 
+ 
+if np.array_equal(predictions, t): 
+    print("Model is working for all inputs") 
+else: 
+    print("Model is not fully correct") 
+    print("Predictions:", predictions) 
+    print("Targets:", t) 
+ 
+# Visualization
+plt.figure(figsize=(6,6)) 
+X1 = X[:,0] 
+X2 = X[:,1] 
+
+# Plot the data points
+plt.scatter(X1, X2, c=t, cmap="coolwarm", edgecolors="k", s=100, zorder=3) 
+
+# Decision Boundary: w1*x1 + w2*x2 + b = 0  =>  x2 = -(w1*x1 + b) / w2
+x1_range = np.linspace(-0.5, 1.5, 100) 
+x2_boundary = -(x1_range * w[0] + b) / w[1] 
+
+plt.plot(x1_range, x2_boundary, c="black", label="Decision boundary") 
+
+plt.xlim(-0.2, 1.2)
+plt.ylim(-0.2, 1.2)
+plt.xlabel("x1") 
+plt.ylabel("x2") 
+plt.title("Perceptron Decision Boundary for AND Gate") 
+plt.legend() 
+plt.grid(True, linestyle='--', alpha=0.6)
+plt.show() # Crucial to actually see the plot!
