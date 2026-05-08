@@ -1,34 +1,35 @@
 import numpy as np
 
-# 1. Stored Patterns (Orthogonal / Highly Distinct)
-# To work well, patterns should have a dot product of 0 or close to it.
+# 1. More robust patterns (N=10)
+# These are clearly distinct, making the energy wells deeper.
 P = np.array([
-    [1, 1, -1, -1],  # Pattern A
-    [1, -1, 1, -1]   # Pattern B
+    [1, 1, 1, 1, 1, -1, -1, -1, -1, -1],  # Pattern A (Half 1s, Half -1s)
+    [1, -1, 1, -1, 1, -1, 1, -1, 1, -1]   # Pattern B (Alternating)
 ])
 
-# 2. Training: Create Weight Matrix
+# 2. Training: Hebbian Learning
 W = np.dot(P.T, P)
 np.fill_diagonal(W, 0)
 
-print("New Weight Matrix:\n", W)
-
-# 3. Testing: Noisy Inputs
-# N1 is a corrupted version of Pattern A
-# N2 is a corrupted version of Pattern B
-N = np.array([
-    [1, 1, 1, -1],   # Only one bit off from Pattern A
-    [1, -1, -1, -1]  # Only one bit off from Pattern B
-])
-
-def recall(noisy_pattern, weights, steps=2):
-    state = noisy_pattern
-    for _ in range(steps): # Iterative recall is more stable
+# 3. Robust Recall Function
+def recall(noisy_pattern, weights, steps=5):
+    state = noisy_pattern.copy()
+    for _ in range(steps):
+        # The core Hopfield update: sign(W * state)
         raw_output = np.dot(weights, state)
         state = np.where(raw_output >= 0, 1, -1)
     return state
 
-print("\n--- FIXED RECALL RESULTS ---")
-for i in range(len(N)):
-    recalled = recall(N[i], W)
-    print(f"Noisy Input: {N[i]} -> Recalled: {recalled}")
+# 4. Testing with heavy noise
+# We'll flip 2-3 bits in each pattern
+N1 = np.array([1, 1, 1, -1, -1, -1, -1, -1, -1, -1]) # Corrupted Pattern A
+N2 = np.array([-1, -1, 1, -1, 1, -1, 1, -1, 1, 1])  # Corrupted Pattern B
+
+print("--- IMPROVED RECALL RESULTS ---")
+for i, noisy in enumerate([N1, N2]):
+    original = P[i]
+    recovered = recall(noisy, W)
+    success = np.array_equal(recovered, original)
+    print(f"Test {i+1}: {'SUCCESS' if success else 'FAILED'}")
+    print(f"  Noisy: {noisy}")
+    print(f"  Recal: {recovered}")
