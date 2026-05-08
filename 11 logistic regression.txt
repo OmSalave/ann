@@ -10,7 +10,7 @@ tf.keras.layers.Dense(1, activation='sigmoid')
 ]) 
 # Compile 
 model.compile( 
-optimizer='adam', 
+optimizer='sgd', 
 loss='binary_crossentropy', 
 metrics=['accuracy'] 
 ) 
